@@ -1,0 +1,334 @@
+<?xml version='1.0' encoding='utf-8'?>
+<gexf version="1.2" xmlns="http://www.gexf.net/1.2draft" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.w3.org/2001/XMLSchema-instance">
+  <graph defaultedgetype="directed" mode="static" name="">
+    <attributes class="node" mode="static">
+      <attribute id="0" title="playerName" type="string" />
+      <attribute id="1" title="nodeLabel" type="string" />
+    </attributes>
+    <meta>
+      <creator>NetworkX 2.2</creator>
+      <lastmodified>17/05/2019</lastmodified>
+    </meta>
+    <nodes>
+      <node id="163406" label="163406">
+        <attvalues>
+          <attvalue for="0" value="LECLERC" />
+          <attvalue for="1" value="39" />
+        </attvalues>
+      </node>
+      <node id="357268" label="357268">
+        <attvalues>
+          <attvalue for="0" value="ONNO" />
+          <attvalue for="1" value="4" />
+        </attvalues>
+      </node>
+      <node id="11340" label="11340">
+        <attvalues>
+          <attvalue for="0" value="BISAILLON" />
+          <attvalue for="1" value="13" />
+        </attvalues>
+      </node>
+      <node id="361490" label="361490">
+        <attvalues>
+          <attvalue for="0" value="FABRE" />
+          <attvalue for="1" value="3" />
+        </attvalues>
+      </node>
+      <node id="41871" label="41871">
+        <attvalues>
+          <attvalue for="0" value="DA COSTA" />
+          <attvalue for="1" value="15" />
+        </attvalues>
+      </node>
+      <node id="229148" label="229148">
+        <attvalues>
+          <attvalue for="0" value="MUNOZ" />
+          <attvalue for="1" value="2" />
+        </attvalues>
+      </node>
+      <node id="15977" label="15977">
+        <attvalues>
+          <attvalue for="0" value="TREILLE" />
+          <attvalue for="1" value="1" />
+        </attvalues>
+      </node>
+      <node id="39616" label="39616">
+        <attvalues>
+          <attvalue for="0" value="HARDOWA" />
+          <attvalue for="1" value="7" />
+        </attvalues>
+      </node>
+      <node id="11476" label="11476">
+        <attvalues>
+          <attvalue for="0" value="LATENDRESSE" />
+          <attvalue for="1" value="11" />
+        </attvalues>
+      </node>
+      <node id="39574" label="39574">
+        <attvalues>
+          <attvalue for="0" value="MCEACHEN" />
+          <attvalue for="1" value="16" />
+        </attvalues>
+      </node>
+      <node id="18044" label="18044">
+        <attvalues>
+          <attvalue for="0" value="MANAVIAN" />
+          <attvalue for="1" value="9" />
+        </attvalues>
+      </node>
+      <node id="24850" label="24850">
+        <attvalues>
+          <attvalue for="0" value="TARTARI" />
+          <attvalue for="1" value="26" />
+        </attvalues>
+      </node>
+      <node id="24907" label="24907">
+        <attvalues>
+          <attvalue for="0" value="ARNAUD" />
+          <attvalue for="1" value="10" />
+        </attvalues>
+      </node>
+      <node id="24848" label="24848">
+        <attvalues>
+          <attvalue for="0" value="FLEURY" />
+          <attvalue for="1" value="27" />
+        </attvalues>
+      </node>
+      <node id="13593" label="13593">
+        <attvalues>
+          <attvalue for="0" value="GOLICIC" />
+          <attvalue for="1" value="2" />
+        </attvalues>
+      </node>
+      <node id="24741" label="24741">
+        <attvalues>
+          <attvalue for="0" value="KARA" />
+          <attvalue for="1" value="13" />
+        </attvalues>
+      </node>
+      <node id="49295" label="49295">
+        <attvalues>
+          <attvalue for="0" value="KRAMAR" />
+          <attvalue for="1" value="9" />
+        </attvalues>
+      </node>
+      <node id="20818" label="20818">
+        <attvalues>
+          <attvalue for="0" value="MAGOVAC" />
+          <attvalue for="1" value="13" />
+        </attvalues>
+      </node>
+      <node id="24858" label="24858">
+        <attvalues>
+          <attvalue for="0" value="BAYLACQ" />
+          <attvalue for="1" value="9" />
+        </attvalues>
+      </node>
+      <node id="39030" label="39030">
+        <attvalues>
+          <attvalue for="0" value="KEARNEY" />
+          <attvalue for="1" value="38" />
+        </attvalues>
+      </node>
+      <node id="17984" label="17984">
+        <attvalues>
+          <attvalue for="0" value="TRABICHET" />
+          <attvalue for="1" value="1" />
+        </attvalues>
+      </node>
+      <node id="36718" label="36718">
+        <attvalues>
+          <attvalue for="0" value="LEGAULT" />
+          <attvalue for="1" value="10" />
+        </attvalues>
+      </node>
+      <node id="357024" label="357024">
+        <attvalues>
+          <attvalue for="0" value="DAIR" />
+          <attvalue for="1" value="1" />
+        </attvalues>
+      </node>
+      <node id="19046" label="19046">
+        <attvalues>
+          <attvalue for="0" value="CHAMPAGNE" />
+          <attvalue for="1" value="37" />
+        </attvalues>
+      </node>
+      <node id="58719" label="58719">
+        <attvalues>
+          <attvalue for="0" value="HARDY" />
+          <attvalue for="1" value="1" />
+        </attvalues>
+      </node>
+      <node id="24709" label="24709">
+        <attvalues>
+          <attvalue for="0" value="ROHAT" />
+          <attvalue for="1" value="26" />
+        </attvalues>
+      </node>
+      <node id="1" label="1">
+        <attvalues>
+          <attvalue for="0" value="Goal" />
+          <attvalue for="1" value="" />
+        </attvalues>
+      </node>
+    </nodes>
+    <edges>
+      <edge id="0" source="163406" target="19046" weight="5" />
+      <edge id="1" source="163406" target="1" weight="21" />
+      <edge id="2" source="163406" target="39030" weight="8" />
+      <edge id="3" source="163406" target="24709" weight="2" />
+      <edge id="4" source="163406" target="41871" weight="1" />
+      <edge id="5" source="163406" target="20818" weight="1" />
+      <edge id="6" source="163406" target="58719" weight="1" />
+      <edge id="7" source="357268" target="1" weight="1" />
+      <edge id="8" source="357268" target="163406" weight="3" />
+      <edge id="9" source="11340" target="1" weight="4" />
+      <edge id="10" source="11340" target="39030" weight="2" />
+      <edge id="11" source="11340" target="163406" weight="1" />
+      <edge id="12" source="11340" target="24850" weight="1" />
+      <edge id="13" source="11340" target="24741" weight="1" />
+      <edge id="14" source="11340" target="13593" weight="1" />
+      <edge id="15" source="11340" target="24709" weight="1" />
+      <edge id="16" source="11340" target="19046" weight="1" />
+      <edge id="17" source="11340" target="11476" weight="1" />
+      <edge id="18" source="361490" target="24741" weight="1" />
+      <edge id="19" source="361490" target="1" weight="1" />
+      <edge id="20" source="361490" target="39574" weight="1" />
+      <edge id="21" source="41871" target="1" weight="9" />
+      <edge id="22" source="41871" target="24848" weight="1" />
+      <edge id="23" source="41871" target="24709" weight="2" />
+      <edge id="24" source="41871" target="11476" weight="1" />
+      <edge id="25" source="41871" target="39030" weight="1" />
+      <edge id="26" source="41871" target="163406" weight="1" />
+      <edge id="27" source="229148" target="1" weight="1" />
+      <edge id="28" source="229148" target="39616" weight="1" />
+      <edge id="29" source="15977" target="1" weight="1" />
+      <edge id="30" source="39616" target="19046" weight="2" />
+      <edge id="31" source="39616" target="24709" weight="1" />
+      <edge id="32" source="39616" target="24848" weight="2" />
+      <edge id="33" source="39616" target="1" weight="1" />
+      <edge id="34" source="39616" target="24907" weight="1" />
+      <edge id="35" source="11476" target="1" weight="4" />
+      <edge id="36" source="11476" target="163406" weight="1" />
+      <edge id="37" source="11476" target="39616" weight="1" />
+      <edge id="38" source="11476" target="24848" weight="2" />
+      <edge id="39" source="11476" target="24850" weight="1" />
+      <edge id="40" source="11476" target="36718" weight="1" />
+      <edge id="41" source="11476" target="19046" weight="1" />
+      <edge id="42" source="39574" target="229148" weight="1" />
+      <edge id="43" source="39574" target="11476" weight="1" />
+      <edge id="44" source="39574" target="19046" weight="5" />
+      <edge id="45" source="39574" target="20818" weight="1" />
+      <edge id="46" source="39574" target="24848" weight="3" />
+      <edge id="47" source="39574" target="11340" weight="2" />
+      <edge id="48" source="39574" target="18044" weight="1" />
+      <edge id="49" source="39574" target="1" weight="1" />
+      <edge id="50" source="39574" target="163406" weight="1" />
+      <edge id="51" source="18044" target="24709" weight="1" />
+      <edge id="52" source="18044" target="163406" weight="1" />
+      <edge id="53" source="18044" target="1" weight="3" />
+      <edge id="54" source="18044" target="39030" weight="1" />
+      <edge id="55" source="18044" target="20818" weight="1" />
+      <edge id="56" source="18044" target="24850" weight="1" />
+      <edge id="57" source="18044" target="24741" weight="1" />
+      <edge id="58" source="24850" target="41871" weight="4" />
+      <edge id="59" source="24850" target="24848" weight="6" />
+      <edge id="60" source="24850" target="24741" weight="2" />
+      <edge id="61" source="24850" target="39030" weight="1" />
+      <edge id="62" source="24850" target="24907" weight="2" />
+      <edge id="63" source="24850" target="1" weight="4" />
+      <edge id="64" source="24850" target="39616" weight="1" />
+      <edge id="65" source="24850" target="24709" weight="1" />
+      <edge id="66" source="24850" target="49295" weight="1" />
+      <edge id="67" source="24850" target="36718" weight="1" />
+      <edge id="68" source="24850" target="11476" weight="1" />
+      <edge id="69" source="24850" target="24858" weight="1" />
+      <edge id="70" source="24850" target="19046" weight="1" />
+      <edge id="71" source="24907" target="1" weight="6" />
+      <edge id="72" source="24907" target="357268" weight="1" />
+      <edge id="73" source="24907" target="41871" weight="1" />
+      <edge id="74" source="24907" target="24709" weight="1" />
+      <edge id="75" source="24907" target="24858" weight="1" />
+      <edge id="76" source="24848" target="24709" weight="2" />
+      <edge id="77" source="24848" target="1" weight="16" />
+      <edge id="78" source="24848" target="39574" weight="1" />
+      <edge id="79" source="24848" target="24741" weight="1" />
+      <edge id="80" source="24848" target="18044" weight="2" />
+      <edge id="81" source="24848" target="24850" weight="3" />
+      <edge id="82" source="24848" target="15977" weight="1" />
+      <edge id="83" source="24848" target="19046" weight="1" />
+      <edge id="84" source="13593" target="24858" weight="1" />
+      <edge id="85" source="13593" target="1" weight="1" />
+      <edge id="86" source="24741" target="1" weight="2" />
+      <edge id="87" source="24741" target="24848" weight="1" />
+      <edge id="88" source="24741" target="163406" weight="1" />
+      <edge id="89" source="24741" target="39574" weight="2" />
+      <edge id="90" source="24741" target="41871" weight="3" />
+      <edge id="91" source="24741" target="19046" weight="2" />
+      <edge id="92" source="24741" target="24850" weight="1" />
+      <edge id="93" source="24741" target="36718" weight="1" />
+      <edge id="94" source="49295" target="24709" weight="1" />
+      <edge id="95" source="49295" target="24907" weight="2" />
+      <edge id="96" source="49295" target="39030" weight="4" />
+      <edge id="97" source="49295" target="20818" weight="1" />
+      <edge id="98" source="49295" target="361490" weight="1" />
+      <edge id="99" source="20818" target="24858" weight="2" />
+      <edge id="100" source="20818" target="39030" weight="2" />
+      <edge id="101" source="20818" target="41871" weight="1" />
+      <edge id="102" source="20818" target="39574" weight="1" />
+      <edge id="103" source="20818" target="24907" weight="1" />
+      <edge id="104" source="20818" target="24848" weight="1" />
+      <edge id="105" source="20818" target="1" weight="3" />
+      <edge id="106" source="20818" target="19046" weight="2" />
+      <edge id="107" source="24858" target="24907" weight="2" />
+      <edge id="108" source="24858" target="39574" weight="1" />
+      <edge id="109" source="24858" target="1" weight="2" />
+      <edge id="110" source="24858" target="11340" weight="1" />
+      <edge id="111" source="24858" target="18044" weight="1" />
+      <edge id="112" source="24858" target="24850" weight="1" />
+      <edge id="113" source="24858" target="24848" weight="1" />
+      <edge id="114" source="39030" target="1" weight="15" />
+      <edge id="115" source="39030" target="163406" weight="12" />
+      <edge id="116" source="39030" target="11340" weight="1" />
+      <edge id="117" source="39030" target="41871" weight="1" />
+      <edge id="118" source="39030" target="19046" weight="3" />
+      <edge id="119" source="39030" target="39574" weight="1" />
+      <edge id="120" source="39030" target="24848" weight="1" />
+      <edge id="121" source="39030" target="20818" weight="1" />
+      <edge id="122" source="39030" target="24709" weight="1" />
+      <edge id="123" source="39030" target="229148" weight="1" />
+      <edge id="124" source="39030" target="36718" weight="1" />
+      <edge id="125" source="17984" target="24709" weight="1" />
+      <edge id="126" source="36718" target="39574" weight="1" />
+      <edge id="127" source="36718" target="1" weight="7" />
+      <edge id="128" source="36718" target="39616" weight="1" />
+      <edge id="129" source="36718" target="24850" weight="1" />
+      <edge id="130" source="357024" target="24858" weight="1" />
+      <edge id="131" source="19046" target="39030" weight="7" />
+      <edge id="132" source="19046" target="163406" weight="8" />
+      <edge id="133" source="19046" target="36718" weight="2" />
+      <edge id="134" source="19046" target="1" weight="9" />
+      <edge id="135" source="19046" target="18044" weight="1" />
+      <edge id="136" source="19046" target="49295" weight="1" />
+      <edge id="137" source="19046" target="11340" weight="1" />
+      <edge id="138" source="19046" target="39574" weight="1" />
+      <edge id="139" source="19046" target="39616" weight="1" />
+      <edge id="140" source="19046" target="24907" weight="1" />
+      <edge id="141" source="19046" target="24850" weight="1" />
+      <edge id="142" source="19046" target="11476" weight="3" />
+      <edge id="143" source="19046" target="24848" weight="1" />
+      <edge id="144" source="58719" target="19046" weight="1" />
+      <edge id="145" source="24709" target="1" weight="9" />
+      <edge id="146" source="24709" target="24848" weight="3" />
+      <edge id="147" source="24709" target="163406" weight="4" />
+      <edge id="148" source="24709" target="49295" weight="1" />
+      <edge id="149" source="24709" target="20818" weight="1" />
+      <edge id="150" source="24709" target="24850" weight="3" />
+      <edge id="151" source="24709" target="36718" weight="1" />
+      <edge id="152" source="24709" target="39616" weight="1" />
+      <edge id="153" source="24709" target="11340" weight="1" />
+      <edge id="154" source="24709" target="39030" weight="2" />
+    </edges>
+  </graph>
+</gexf>
