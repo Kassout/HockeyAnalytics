@@ -1,143 +1,222 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed May  1 10:27:46 2019
+import warnings
+from enum import Enum
+from os import makedirs
+from os import system
+from sys import exit
 
-@author: Maxime HELIOT
-"""    
+import matplotlib.pyplot as plt
+import networkx as nx
+import numpy as np
+import pandas as pd
 
-def find(lst, key, value):
-    for i, dic in enumerate(lst):
-        if dic[key] == value:
-            return i
-    return -1
-    
-if __name__ == "__main__":
-    
-    # Imports
-    import pandas as pd
-    import matplotlib.pyplot as plt
-    import numpy as np
-    import networkx as nx
-    
-    #STABLE
-    # excel datas import
-    magnus_data_1819 = pd.read_excel('datasets/france1819goals.xlsx', sheet_name='Data')
-    
+import functionUtils as futils
+import message_properties as msg
+
+PATH_DATASET = 'datasets/france1819goals.xlsx'
+PATH_CONFIG = 'batch_config.txt'
+
+
+class MagnusTeams(Enum):
+    ROU = 'Rouen'
+    GRE = 'Grenoble'
+    BOR = 'Bordeaux'
+    CHM = 'Chamonix'
+    ANG = 'Angers'
+    GAP = 'Gap'
+    NIC = 'Nice'
+    MUL = 'Mulhouse'
+    HOR = 'Anglet'
+    LYO = 'Lyon'
+    STR = 'Strasbourg'
+    AMI = 'Amiens'
+
+
+def hockey_team_network_analysis(team, magnus_data):
+    print(MagnusTeams(team).value, end="")
+
+    magnus_data_by_team = magnus_data.loc[magnus_data['scoringTeam.1'] == MagnusTeams(team).value].reset_index(
+        drop=True)
+
     # work only with 5v5 strength state
-    only_5v5 = magnus_data_1819[magnus_data_1819.strenghtState == '5v5'].reset_index(drop=True)
-    
-    # teams listing
-    teams = list(only_5v5['scoringTeam.1'].unique())
-    
-    # pick up the team you want to study
-    team = "Grenoble"
-    
+    only_5v5 = magnus_data_by_team[magnus_data_by_team.strenghtState == '5v5'].reset_index(drop=True)
+
+    print('.', end="")
+
     # arrange dataFrame to capture only datas of interest for the network's edges
-    edges_data = only_5v5[["scoringTeam.1","G","A1","A2"]].sort_values(by=['scoringTeam.1']).reset_index(drop=True)
-    edges_data.columns = ['nameTeam','scorer','firstAssist','secondAssist']
+    edges_data = only_5v5[["scoringTeam.1", "G", "A1"]]
+    edges_data.columns = ['nameTeam', 'scorer', 'firstAssist']
 
     # arrange dataFrame to capture only datas of interest for the network's nodes
-    nodes_data = pd.DataFrame([map(int,pd.unique(only_5v5[['G','A1','A2']].values.ravel('K'))[~np.isnan(pd.unique(only_5v5[['G','A1','A2']].values.ravel('K')))])]).T
+    nodes_data = pd.DataFrame([map(int, pd.unique(only_5v5[['G', 'A1']].values.ravel('K'))[
+        ~np.isnan(pd.unique(only_5v5[['G', 'A1']].values.ravel('K')))])]).T
     nodes_data.columns = ['idPlayer']
-    
+
     nodes_data['namePlayer'] = None
     nodes_data['nameTeam'] = None
     nodes_data['seasonScore'] = 0
-    
-    for i in nodes_data['idPlayer'] :
-        try: 
+
+    for i in nodes_data['idPlayer']:
+        try:
             index = list(only_5v5['G']).index(i)
             column = 'G_fullName'
-        except ValueError: 
+        except ValueError:
             try:
                 index = list(only_5v5['A1']).index(i)
                 column = 'A1_fullName'
             except ValueError:
-                try: 
-                    index = list(only_5v5['A2']).index(i)
-                    column = 'A2_fullName'
-                except ValueError:
-                    index = None
-        if index is not None :
+                index = None
+        if index is not None:
             nodes_data.loc[list(nodes_data['idPlayer']).index(i), 'namePlayer'] = only_5v5.loc[index, column]
             nodes_data.loc[list(nodes_data['idPlayer']).index(i), 'nameTeam'] = only_5v5.loc[index, 'scoringTeam.1']
-            
+
     for i in range(len(edges_data)):
         nodes_data.loc[nodes_data['idPlayer'] == edges_data.iloc[i].scorer, 'seasonScore'] += 1
         nodes_data.loc[nodes_data['idPlayer'] == edges_data.iloc[i].firstAssist, 'seasonScore'] += 1
-        nodes_data.loc[nodes_data['idPlayer'] == edges_data.iloc[i].secondAssist, 'seasonScore'] += 1
 
     nodes_data = nodes_data.sort_values(by=['nameTeam']).reset_index(drop=True)
-    
-    # build nodes from nodes_data
-    ### ATTENTION : NODELABEL is choosable. (player name or score)
-    nodes = [(nodes_data.idPlayer[i], {'playerName':nodes_data.namePlayer[i].split(',')[0],'nodeLabel':str(nodes_data.seasonScore[i])}) for i in range(len(nodes_data)) if nodes_data.nameTeam[i] == team]
-    nodes.append((1, {'playerName':'Goal','nodeLabel':''}))
-   
-    ####################################### MULTIDIGRAPH ######################################################
-    
-    multiDiGraph_edges = []
-    
-    # build edges from edges_data    
-    # logic : FROM x1.id TO x2.id
-    edges_data_team = edges_data.loc[edges_data['nameTeam'] == team].reset_index(drop=True)
-    for i in range(len(edges_data_team)) :
-        multiDiGraph_edges.append((int(edges_data_team.loc[i, 'scorer']), 1))
-        if not np.isnan(edges_data_team.loc[i, 'firstAssist']) :
-            multiDiGraph_edges.append((int(edges_data_team.loc[i, 'firstAssist']), int(edges_data_team.loc[i, 'scorer'])))
-            if not np.isnan(edges_data_team.loc[i, 'secondAssist']) :
-                multiDiGraph_edges.append((int(edges_data_team.loc[i, 'secondAssist']), int(edges_data_team.loc[i, 'firstAssist'])))
-    
-    G = nx.MultiDiGraph()
-    G.add_nodes_from(nodes)
-    G.add_edges_from(multiDiGraph_edges)
-    weighted_nodes = nx.betweenness_centrality(G, normalized=True)
-    weights = 8000*pd.Series(list(weighted_nodes.values()))
 
-    print(weighted_nodes)
-    
-    plt.figure(1, figsize=(30, 10))
-    plt.subplot(121)
-    nx.draw(G,k =1,node_color=range(len(nodes)),font_size = 10, pos=nx.spring_layout(G),
-            node_size = weights,cmap=plt.cm.Blues,labels={player[0]:player[1].get('nodeLabel') for player in nodes}, with_labels=True)
-    
-    nx.write_gexf(G, "exports/MultiDiGraph.gexf")
-    
-    ####################################### DIGRAPH - WEIGHTED EDGES ##########################################
-    
+    print('.', end="")
+
+    # build nodes from nodes_data
+    # ATTENTION : NODELABEL is choosable. (player name or score)
+    nodes = [(nodes_data.idPlayer[i],
+              {'playerName': nodes_data.namePlayer[i].split(',')[0], 'nodeLabel': str(nodes_data.seasonScore[i])}) for i
+             in range(len(nodes_data)) if nodes_data.nameTeam[i] == team]
+    nodes.append((1, {'playerName': 'Goal', 'nodeLabel': ''}))
+
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ DIGRAPH - WEIGHTED EDGES ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+
     diGraph_edges = []
-    
-    # build edges from edges_data    
+
+    # build edges from edges_data
     # logic : FROM x1.id TO x2.id
-    for i in range(len(edges_data_team)) :
-        if [int(edges_data_team.loc[i, 'scorer']), 1] in [dic.get('edge') for dic in diGraph_edges if dic.get('edge') == [int(edges_data_team.loc[i, 'scorer']), 1]]:
-            diGraph_edges[find(diGraph_edges, 'edge', [int(edges_data_team.loc[i, 'scorer']), 1])]['weight'] += 1
-        else :
-            diGraph_edges.append({'edge':[int(edges_data_team.loc[i, 'scorer']), 1], 'weight': 1})
-        if not np.isnan(edges_data_team.loc[i, 'firstAssist']) :
-            if [int(edges_data_team.loc[i, 'firstAssist']), int(edges_data_team.loc[i, 'scorer'])] in [dic.get('edge') for dic in diGraph_edges if dic.get('edge') == [int(edges_data_team.loc[i, 'firstAssist']), int(edges_data_team.loc[i, 'scorer'])]]:
-                diGraph_edges[find(diGraph_edges, 'edge', [int(edges_data_team.loc[i, 'firstAssist']), int(edges_data_team.loc[i, 'scorer'])])]['weight'] += 1
-            else :
-                diGraph_edges.append({'edge':[int(edges_data_team.loc[i, 'firstAssist']), int(edges_data_team.loc[i, 'scorer'])], 'weight': 1})
-        if not np.isnan(edges_data_team.loc[i, 'secondAssist']) :
-            if [int(edges_data_team.loc[i, 'secondAssist']), int(edges_data_team.loc[i, 'firstAssist'])] in [dic.get('edge') for dic in diGraph_edges if dic.get('edge') == [int(edges_data_team.loc[i, 'secondAssist']), int(edges_data_team.loc[i, 'firstAssist'])]]:
-                diGraph_edges[find(diGraph_edges, 'edge', [int(edges_data_team.loc[i, 'secondAssist']), int(edges_data_team.loc[i, 'firstAssist'])])]['weight'] += 1
-            else :
-                diGraph_edges.append({'edge':[int(edges_data_team.loc[i, 'secondAssist']), int(edges_data_team.loc[i, 'firstAssist'])], 'weight': 1})
-                    
-    diGraph_edges = [tuple(dic['edge']) + tuple([dic['weight']])  for dic in diGraph_edges]
-    
+    for i in range(len(edges_data)):
+        if [int(edges_data.loc[i, 'scorer']), 1] in [dic.get('edge') for dic in diGraph_edges if
+                                                     dic.get('edge') == [int(edges_data.loc[i, 'scorer']), 1]]:
+            diGraph_edges[futils.find_dictvalue_in_list(diGraph_edges, 'edge',
+                                                                      [int(edges_data.loc[i, 'scorer']), 1])][
+                'weight'] += 1
+        else:
+            diGraph_edges.append({'edge': [int(edges_data.loc[i, 'scorer']), 1], 'weight': 1})
+        if not np.isnan(edges_data.loc[i, 'firstAssist']):
+            if [int(edges_data.loc[i, 'firstAssist']), int(edges_data.loc[i, 'scorer'])] in [dic.get('edge') for dic in
+                                                                                             diGraph_edges if
+                                                                                             dic.get('edge') == [int(
+                                                                                                     edges_data.loc[
+                                                                                                         i, 'firstAssist']),
+                                                                                                                 int(
+                                                                                                                         edges_data.loc[
+                                                                                                                             i, 'scorer'])]]:
+                diGraph_edges[futils.find_dictvalue_in_list(diGraph_edges, 'edge',
+                                                                          [int(edges_data.loc[i, 'firstAssist']),
+                                                                           int(edges_data.loc[i, 'scorer'])])][
+                    'weight'] += 1
+            else:
+                diGraph_edges.append(
+                    {'edge': [int(edges_data.loc[i, 'firstAssist']), int(edges_data.loc[i, 'scorer'])], 'weight': 1})
+
+    diGraph_edges = [tuple(dic['edge']) + tuple([dic['weight']]) for dic in diGraph_edges]
+
+    print('.', end="")
+
     H = nx.DiGraph()
     H.add_nodes_from(nodes)
     H.add_weighted_edges_from(diGraph_edges)
     weighted_nodes = nx.betweenness_centrality(H, normalized=True, weight='weight')
-    weights = 8000*pd.Series(list(weighted_nodes.values()))
-    
-    print(weighted_nodes)
-    
-    plt.figure(2, figsize=(30, 10))
+    weights = 8000 * pd.Series(list(weighted_nodes.values()))
+
+    goal_fixed_positions = {1: (0, 0)}  # dict with two of the positions set
+    goal_fixed_nodes = goal_fixed_positions.keys()
+    pos = nx.spring_layout(H, pos=goal_fixed_positions, fixed=goal_fixed_nodes)
+
+    plt.figure(1, figsize=(40, 15))
     plt.subplot(121)
-    nx.draw(H,k =1,node_color=range(len(nodes)),font_size = 10,
-            node_size = weights,cmap=plt.cm.Blues,labels={player[0]:player[1].get('nodeLabel') for player in nodes}, with_labels=True)
-    
-    nx.write_gexf(H, "exports/DiGraph.gexf")
+    nx.draw_networkx(H, node_color=range(len(nodes)), font_size=10, pos=pos,
+                     node_size=weights, cmap=plt.cm.Reds,
+                     labels={player[0]: player[1].get('nodeLabel') for player in nodes}, with_labels=True)
+
+    for i in pos.keys():
+        x, y = pos[i]
+        plt.text(x, y + 0.04, s=''.join([player[1].get('playerName') for player in nodes if player[0] == i]),
+                 bbox=dict(facecolor='red', alpha=0.5), horizontalalignment='center')
+
+    makedirs("exports", exist_ok=True)
+
+    plt.savefig('exports/' + team + '_network.png')
+    plt.clf()
+
+    print('Done.')
+
+
+def user_choice_screen(input_value):
+    if input_value == 1:
+        system('cls')
+    elif input_value == 2:
+        print(msg.message_error_unkown_functionnality)
+        user_choice_screen(futils.input_int_recall(futils.build_message(msg.message_functionnal_launch, msg.message_functionnal_load, msg.message_functionnal_exit)))
+    elif input_value == 3:
+        exit(msg.message_info_exit)
+
+
+def magnus_network_choice_screen(input_value):
+    if answer == 1:
+        print(msg.message_info_magnusnetwork_fullteam)
+        # config file import
+        try:
+            batch_config = open(PATH_CONFIG, 'r')
+        except ValueError:
+            print(msg.message_error_load_config + PATH_CONFIG)
+
+        print('Compute team network...')
+        for team in batch_config.read().splitlines():
+            hockey_team_network_analysis(team, magnus_data_1819)
+        print('End of program.')
+    if answer == 2:
+        print(msg.message_info_magnusnetwork_uniqueteam)
+        input_team = input('Choose your fighter: ')
+        for team in MagnusTeams:
+            if team.value == input_team:
+                hockey_team_network_analysis(team.value, magnus_data_1819)
+                break
+    if answer == 3:
+        sys.exit(msg.message_info_exit)
+
+
+if __name__ == "__main__":
+
+    # warnings.filterwarnings("ignore")
+
+    print(msg.message_info_copyright)
+    print(msg.message_info_contact, end='\n\n')
+    print(msg.message_info_welcome, end='\n\n')
+    print(msg.message_info_input)
+
+    input_value = futils.input_int_recall(
+        futils.build_message(
+            msg.message_functionnal_launch, msg.message_functionnal_load, msg.message_functionnal_exit))
+
+    user_choice_screen(input_value)
+
+    welcome_screen = open('welcome_screen.txt', 'r')
+    for ASCII_line in welcome_screen.read().splitlines():
+        print(ASCII_line)
+
+    print('Loading datas...', end="")
+
+    # excel datas import
+    try:
+        magnus_data_1819 = pd.read_excel(PATH_DATASET, sheet_name='Data')
+    except ValueError:
+        print(msg.message_error_load_dataset + PATH_DATASET)
+
+    print('Done.\n')
+    print(msg.message_info_magnusnetwork_welcome)
+
+    answer = futils.input_int_recall(
+        futils.build_message(msg.message_functionnal_magnusnetwork_fullteam,
+                                           msg.message_functionnal_magnusnetwork_uniqueteam,
+                                           msg.message_functionnal_magnusnetwork_exit))
+
+    magnus_network_choice_screen(answer)
+
+    input('Appuyer sur ENTREE pour fermer...')
