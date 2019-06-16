@@ -1,16 +1,14 @@
-import warnings
 from enum import Enum
 from os import makedirs
 from os import system
 from sys import exit
 
+import functionUtils as futils
 import matplotlib.pyplot as plt
+import message_properties as msg
 import networkx as nx
 import numpy as np
 import pandas as pd
-
-import functionUtils as futils
-import message_properties as msg
 
 PATH_DATASET = 'datasets/france1819goals.xlsx'
 PATH_CONFIG = 'batch_config.txt'
@@ -65,7 +63,8 @@ def hockey_team_network_analysis(team, magnus_data):
                 column = 'A1_fullName'
             except ValueError:
                 index = None
-        if index is not None:
+                column = None
+        if index is not None and column is not None:
             nodes_data.loc[list(nodes_data['idPlayer']).index(i), 'namePlayer'] = only_5v5.loc[index, column]
             nodes_data.loc[list(nodes_data['idPlayer']).index(i), 'nameTeam'] = only_5v5.loc[index, 'scoringTeam.1']
 
@@ -123,14 +122,14 @@ def hockey_team_network_analysis(team, magnus_data):
     H.add_nodes_from(nodes)
     H.add_weighted_edges_from(diGraph_edges)
     weighted_nodes = nx.betweenness_centrality(H, normalized=True, weight='weight')
-    weights = 8000 * pd.Series(list(weighted_nodes.values()))
+    weights = 8000 * int(pd.Series(list(weighted_nodes.values())))
 
     goal_fixed_positions = {1: (0, 0)}  # dict with two of the positions set
     goal_fixed_nodes = goal_fixed_positions.keys()
     pos = nx.spring_layout(H, pos=goal_fixed_positions, fixed=goal_fixed_nodes)
 
-    plt.figure(1, figsize=(40, 15))
-    plt.subplot(121)
+    plt.figure(1, figsize=(20, 15))
+    plt.plot()
     nx.draw_networkx(H, node_color=range(len(nodes)), font_size=10, pos=pos,
                      node_size=weights, cmap=plt.cm.Reds,
                      labels={player[0]: player[1].get('nodeLabel') for player in nodes}, with_labels=True)
@@ -140,9 +139,14 @@ def hockey_team_network_analysis(team, magnus_data):
         plt.text(x, y + 0.04, s=''.join([player[1].get('playerName') for player in nodes if player[0] == i]),
                  bbox=dict(facecolor='red', alpha=0.5), horizontalalignment='center')
 
+    plt.axis('off')
+    plt.title(team + " network")
+
     makedirs("exports", exist_ok=True)
 
     plt.savefig('exports/' + team + '_network.png')
+    path = dict(nx.all_pairs_shortest_path(H))
+
     plt.clf()
 
     print('Done.')
@@ -160,17 +164,18 @@ def user_choice_screen(input_value):
 
 def magnus_network_choice_screen(input_value):
     if answer == 1:
-        print(msg.message_info_magnusnetwork_fullteam)
+        print("\n" + msg.message_info_magnusnetwork_fullteam)
         # config file import
         try:
             batch_config = open(PATH_CONFIG, 'r')
         except ValueError:
             print(msg.message_error_load_config + PATH_CONFIG)
 
-        print('Compute team network...')
-        for team in batch_config.read().splitlines():
-            hockey_team_network_analysis(team, magnus_data_1819)
-        print('End of program.')
+        if batch_config is not None:
+            print('Compute team network...')
+            for team in batch_config.read().splitlines():
+                hockey_team_network_analysis(team, magnus_data_1819)
+            print('End of program.')
     if answer == 2:
         print(msg.message_info_magnusnetwork_uniqueteam)
         input_team = input('Choose your fighter: ')
@@ -179,7 +184,7 @@ def magnus_network_choice_screen(input_value):
                 hockey_team_network_analysis(team.value, magnus_data_1819)
                 break
     if answer == 3:
-        sys.exit(msg.message_info_exit)
+        exit(msg.message_info_exit)
 
 
 if __name__ == "__main__":
