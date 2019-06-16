@@ -40,13 +40,19 @@ def hockey_team_network_analysis(team, magnus_data):
 
     print('.', end="")
 
+    nodes, edges = hockey_data_manipulation(only_5v5, team)
+
+    network_analysis(nodes, edges, team)
+
+
+def hockey_data_manipulation(data, team):
     # arrange dataFrame to capture only datas of interest for the network's edges
-    edges_data = only_5v5[["scoringTeam.1", "G", "A1"]]
+    edges_data = data[["scoringTeam.1", "G", "A1"]]
     edges_data.columns = ['nameTeam', 'scorer', 'firstAssist']
 
     # arrange dataFrame to capture only datas of interest for the network's nodes
-    nodes_data = pd.DataFrame([map(int, pd.unique(only_5v5[['G', 'A1']].values.ravel('K'))[
-        ~np.isnan(pd.unique(only_5v5[['G', 'A1']].values.ravel('K')))])]).T
+    nodes_data = pd.DataFrame([map(int, pd.unique(data[['G', 'A1']].values.ravel('K'))[
+        ~np.isnan(pd.unique(data[['G', 'A1']].values.ravel('K')))])]).T
     nodes_data.columns = ['idPlayer']
 
     nodes_data['namePlayer'] = None
@@ -55,18 +61,18 @@ def hockey_team_network_analysis(team, magnus_data):
 
     for i in nodes_data['idPlayer']:
         try:
-            index = list(only_5v5['G']).index(i)
+            index = list(data['G']).index(i)
             column = 'G_fullName'
         except ValueError:
             try:
-                index = list(only_5v5['A1']).index(i)
+                index = list(data['A1']).index(i)
                 column = 'A1_fullName'
             except ValueError:
                 index = None
                 column = None
         if index is not None and column is not None:
-            nodes_data.loc[list(nodes_data['idPlayer']).index(i), 'namePlayer'] = only_5v5.loc[index, column]
-            nodes_data.loc[list(nodes_data['idPlayer']).index(i), 'nameTeam'] = only_5v5.loc[index, 'scoringTeam.1']
+            nodes_data.loc[list(nodes_data['idPlayer']).index(i), 'namePlayer'] = data.loc[index, column]
+            nodes_data.loc[list(nodes_data['idPlayer']).index(i), 'nameTeam'] = data.loc[index, 'scoringTeam.1']
 
     for i in range(len(edges_data)):
         nodes_data.loc[nodes_data['idPlayer'] == edges_data.iloc[i].scorer, 'seasonScore'] += 1
@@ -85,44 +91,39 @@ def hockey_team_network_analysis(team, magnus_data):
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ DIGRAPH - WEIGHTED EDGES ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 
-    diGraph_edges = []
+    digraph_edges = []
 
     # build edges from edges_data
     # logic : FROM x1.id TO x2.id
     for i in range(len(edges_data)):
-        if [int(edges_data.loc[i, 'scorer']), 1] in [dic.get('edge') for dic in diGraph_edges if
-                                                     dic.get('edge') == [int(edges_data.loc[i, 'scorer']), 1]]:
-            diGraph_edges[futils.find_dictvalue_in_list(diGraph_edges, 'edge',
-                                                                      [int(edges_data.loc[i, 'scorer']), 1])][
-                'weight'] += 1
+        if [int(edges_data.loc[i, 'scorer']), 1] in [dic.get('edge') for dic in digraph_edges
+                                                     if dic.get('edge') == [int(edges_data.loc[i, 'scorer']), 1]]:
+            digraph_edges[futils.find_dictvalue_in_list(digraph_edges, 'edge',
+                                                        [int(edges_data.loc[i, 'scorer']), 1])]['weight'] += 1
         else:
-            diGraph_edges.append({'edge': [int(edges_data.loc[i, 'scorer']), 1], 'weight': 1})
+            digraph_edges.append({'edge': [int(edges_data.loc[i, 'scorer']), 1], 'weight': 1})
         if not np.isnan(edges_data.loc[i, 'firstAssist']):
-            if [int(edges_data.loc[i, 'firstAssist']), int(edges_data.loc[i, 'scorer'])] in [dic.get('edge') for dic in
-                                                                                             diGraph_edges if
-                                                                                             dic.get('edge') == [int(
-                                                                                                     edges_data.loc[
-                                                                                                         i, 'firstAssist']),
-                                                                                                                 int(
-                                                                                                                         edges_data.loc[
-                                                                                                                             i, 'scorer'])]]:
-                diGraph_edges[futils.find_dictvalue_in_list(diGraph_edges, 'edge',
-                                                                          [int(edges_data.loc[i, 'firstAssist']),
-                                                                           int(edges_data.loc[i, 'scorer'])])][
-                    'weight'] += 1
+            if [int(edges_data.loc[i, 'firstAssist']), int(edges_data.loc[i, 'scorer'])] in [dic.get('edge') for dic in digraph_edges if dic.get('edge') == [int(edges_data.loc[i, 'firstAssist']), int(edges_data.loc[i, 'scorer'])]]:
+                digraph_edges[futils.find_dictvalue_in_list(digraph_edges, 'edge',
+                                                            [int(edges_data.loc[i, 'firstAssist']),
+                                                             int(edges_data.loc[i, 'scorer'])])]['weight'] += 1
             else:
-                diGraph_edges.append(
-                    {'edge': [int(edges_data.loc[i, 'firstAssist']), int(edges_data.loc[i, 'scorer'])], 'weight': 1})
+                digraph_edges.append({'edge': [int(edges_data.loc[i, 'firstAssist']),
+                                               int(edges_data.loc[i, 'scorer'])], 'weight': 1})
 
-    diGraph_edges = [tuple(dic['edge']) + tuple([dic['weight']]) for dic in diGraph_edges]
+    digraph_edges = [tuple(dic['edge']) + tuple([dic['weight']]) for dic in digraph_edges]
 
     print('.', end="")
 
+    return nodes, digraph_edges
+
+
+def network_analysis(nodes, edges, team):
     H = nx.DiGraph()
     H.add_nodes_from(nodes)
-    H.add_weighted_edges_from(diGraph_edges)
+    H.add_weighted_edges_from(edges)
     weighted_nodes = nx.betweenness_centrality(H, normalized=True, weight='weight')
-    weights = 8000 * int(pd.Series(list(weighted_nodes.values())))
+    weights = 8000 * pd.Series(list(weighted_nodes.values()))
 
     goal_fixed_positions = {1: (0, 0)}  # dict with two of the positions set
     goal_fixed_nodes = goal_fixed_positions.keys()
@@ -145,7 +146,6 @@ def hockey_team_network_analysis(team, magnus_data):
     makedirs("exports", exist_ok=True)
 
     plt.savefig('exports/' + team + '_network.png')
-    path = dict(nx.all_pairs_shortest_path(H))
 
     plt.clf()
 
@@ -166,6 +166,7 @@ def magnus_network_choice_screen(input_value):
     if answer == 1:
         print("\n" + msg.message_info_magnusnetwork_fullteam)
         # config file import
+        batch_config = None
         try:
             batch_config = open(PATH_CONFIG, 'r')
         except ValueError:
@@ -188,9 +189,6 @@ def magnus_network_choice_screen(input_value):
 
 
 if __name__ == "__main__":
-
-    # warnings.filterwarnings("ignore")
-
     print(msg.message_info_copyright)
     print(msg.message_info_contact, end='\n\n')
     print(msg.message_info_welcome, end='\n\n')
