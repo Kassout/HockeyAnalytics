@@ -122,7 +122,7 @@ def hockey_team_network_analysis(team, magnus_data):
     H.add_nodes_from(nodes)
     H.add_weighted_edges_from(diGraph_edges)
     weighted_nodes = nx.betweenness_centrality(H, normalized=True, weight='weight')
-    weights = 8000 * int(pd.Series(list(weighted_nodes.values())))
+    weights = 8000 * pd.Series(list(weighted_nodes.values()))
 
     goal_fixed_positions = {1: (0, 0)}  # dict with two of the positions set
     goal_fixed_nodes = goal_fixed_positions.keys()
