@@ -201,6 +201,7 @@ def network_analysis(nodes, edges, team, strenghtState):
 
     weights = 10000 * pd.Series(list(weighted_nodes.values()))
 
+
     goal_fixed_positions = {1: (0, 0)}  # dict with two of the positions set
     goal_fixed_nodes = goal_fixed_positions.keys()
     pos = nx.spring_layout(H, pos=goal_fixed_positions, fixed=goal_fixed_nodes)
