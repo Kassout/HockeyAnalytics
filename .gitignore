@@ -1,0 +1,9 @@
+
+.idea/HockeyAnalytics.iml
+.idea/misc.xml
+.idea/modules.xml
+.idea/workspace.xml
+.idea/vcs.xml
+NetworkAnalysis/__pycache__/message_properties.cpython-37.pyc
+NetworkAnalysis/__pycache__/network_analytics.cpython-37.pyc
+NetworkAnalysis/__pycache__/functionUtils.cpython-37.pyc

@@ -10,8 +10,15 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 
-PATH_DATASET = 'datasets/france1819goals.xlsx'
+PATH_ACTIONS_DATASET = 'datasets/france1819goals.xlsx'
+PATH_PLAYERS_DATASET = 'datasets/stats indiv.xlsx'
+PATH_GAMES_DATASET = 'datasets/france1819roster.xlsx'
 PATH_CONFIG = 'batch_config.txt'
+SITUATIONS = ['ES', 'PP']
+ONGLET_NODES_ES = pd.DataFrame()
+ONGLET_NODES_PP = pd.DataFrame()
+ONGLET_EDGES_ES = pd.DataFrame()
+ONGLET_EDGES_PP = pd.DataFrame()
 
 
 class MagnusTeams(Enum):
@@ -29,20 +36,31 @@ class MagnusTeams(Enum):
     AMI = 'Amiens'
 
 
-def hockey_team_network_analysis(team, magnus_data):
+def hockey_team_network_analysis(team, magnus_data, strenghtState):
     print(MagnusTeams(team).value, end="")
 
     magnus_data_by_team = magnus_data.loc[magnus_data['scoringTeam.1'] == MagnusTeams(team).value].reset_index(
         drop=True)
 
     # work only with 5v5 strength state
-    only_5v5 = magnus_data_by_team[magnus_data_by_team.strenghtState == '5v5'].reset_index(drop=True)
+    if strenghtState == 'ES':
+        data_for_situation = magnus_data_by_team[magnus_data_by_team.strenghtState == '5v5'].reset_index(drop=True)
+    elif strenghtState == 'PP':
+        data_for_home_situation = magnus_data_by_team[magnus_data_by_team.homeTeam == team]
+        data_for_home_situation = data_for_home_situation[data_for_home_situation['strenghtState'].isin(['5v4', '5v3', '6v5', '6v4', '4v3'])]
+        data_for_away_situation = magnus_data_by_team[magnus_data_by_team.awayTeam == team]
+        data_for_away_situation = data_for_away_situation[data_for_away_situation['strenghtState'].isin(['4v5', '3v5', '5v6', '4v6', '3v4'])]
+        data_for_situation = pd.concat([data_for_home_situation, data_for_away_situation]).reset_index(drop=True)
 
     print('.', end="")
 
-    nodes, edges = hockey_data_manipulation(only_5v5, team)
+    nodes, edges = hockey_data_manipulation(data_for_situation, team)
 
-    network_analysis(nodes, edges, team)
+    network_analysis(nodes, edges, team, strenghtState)
+
+
+def string_split(string):
+    return str.capitalize(string.split(',').get(0))
 
 
 def hockey_data_manipulation(data, team):
@@ -68,7 +86,7 @@ def hockey_data_manipulation(data, team):
                 index = list(data['A1']).index(i)
                 column = 'A1_fullName'
             except ValueError:
-                index = None
+                index = Nonedata
                 column = None
         if index is not None and column is not None:
             nodes_data.loc[list(nodes_data['idPlayer']).index(i), 'namePlayer'] = data.loc[index, column]
@@ -85,9 +103,9 @@ def hockey_data_manipulation(data, team):
     # build nodes from nodes_data
     # ATTENTION : NODELABEL is choosable. (player name or score)
     nodes = [(nodes_data.idPlayer[i],
-              {'playerName': nodes_data.namePlayer[i].split(',')[0], 'nodeLabel': str(nodes_data.seasonScore[i])}) for i
+              {'playerName': nodes_data.namePlayer[i].split(',')[0], 'playerFirstName': nodes_data.namePlayer[i].split(',')[1][1:], 'nodeLabel': str(nodes_data.seasonScore[i])}) for i
              in range(len(nodes_data)) if nodes_data.nameTeam[i] == team]
-    nodes.append((1, {'playerName': 'Goal', 'nodeLabel': ''}))
+    nodes.append((1, {'playerName': 'Goal', 'playerFirstName': '', 'nodeLabel': ''}))
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ DIGRAPH - WEIGHTED EDGES ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 
@@ -118,12 +136,70 @@ def hockey_data_manipulation(data, team):
     return nodes, digraph_edges
 
 
-def network_analysis(nodes, edges, team):
+def fair_betweenness(node, team, strenghtState):
+
+    player_data = pd.read_excel(PATH_GAMES_DATASET, sheet_name='Sheet1')
+    player_data = player_data[player_data['id'] == node[0]]
+
+    magnus_data = pd.read_excel(PATH_ACTIONS_DATASET, sheet_name='Data')
+
+    magnus_data_by_team = magnus_data.loc[magnus_data['scoringTeam.1'] == MagnusTeams.__getattr__(team).value].reset_index(
+        drop=True)
+
+    # work only with 5v5 strength state
+    if strenghtState == 'ES':
+        data_for_situation = magnus_data_by_team[magnus_data_by_team.strenghtState == '5v5'].reset_index(drop=True)
+    elif strenghtState == 'PP':
+        data_for_home_situation = magnus_data_by_team[magnus_data_by_team.homeTeam == MagnusTeams.__getattr__(team).value]
+        data_for_home_situation = data_for_home_situation[
+            data_for_home_situation['strenghtState'].isin(['5v4', '5v3', '6v5', '6v4', '4v3'])]
+        data_for_away_situation = magnus_data_by_team[magnus_data_by_team.awayTeam == MagnusTeams.__getattr__(team).value]
+        data_for_away_situation = data_for_away_situation[
+            data_for_away_situation['strenghtState'].isin(['4v5', '3v5', '5v6', '4v6', '3v4'])]
+        data_for_situation = pd.concat([data_for_home_situation, data_for_away_situation]).reset_index(drop=True)
+
+    fair_datas = pd.DataFrame()
+    for game_id in list(player_data['gameid']):
+        game_data = data_for_situation[data_for_situation['gameid'] == game_id]
+        fair_datas = pd.concat([fair_datas, game_data])
+
+    nodes, edges = hockey_data_manipulation(fair_datas.reset_index(drop=True), MagnusTeams.__getattr__(team).value)
+
+    G = nx.DiGraph()
+    G.add_nodes_from(nodes)
+    G.add_weighted_edges_from(edges)
+
+    weighted_nodes = nx.betweenness_centrality(G, normalized=False, weight='weight')
+
+    return weighted_nodes[node[0]]
+
+
+def network_analysis(nodes, edges, team, strenghtState):
     H = nx.DiGraph()
     H.add_nodes_from(nodes)
     H.add_weighted_edges_from(edges)
-    weighted_nodes = nx.betweenness_centrality(H, normalized=True, weight='weight')
-    weights = 8000 * pd.Series(list(weighted_nodes.values()))
+
+    weighted_nodes = nx.betweenness_centrality(H, normalized=False, weight='weight')
+
+    players_data = pd.read_excel(PATH_PLAYERS_DATASET, sheet_name='Final')
+
+    for element in MagnusTeams:
+        if team == element.value:
+            team_acronym = element.name
+            break
+
+    players_data = players_data[players_data['Equipe'] == team_acronym]
+    for node in nodes:
+        if node[1].get('playerName') != 'Goal':
+            player = players_data.loc[players_data['Joueur'] == str.capitalize(node[1].get('playerName'))+', '+str.capitalize(node[1].get('playerFirstName'))]
+            if not player.empty:
+                if players_data.MJ.max() != int(player['MJ']):
+                    weighted_nodes[node[0]] = fair_betweenness(node, team_acronym, strenghtState)
+
+    for value in weighted_nodes:
+        weighted_nodes[value] *= 1 / ((len(weighted_nodes) - 1)*(len(weighted_nodes) - 2))
+
+    weights = 10000 * pd.Series(list(weighted_nodes.values()))
 
     goal_fixed_positions = {1: (0, 0)}  # dict with two of the positions set
     goal_fixed_nodes = goal_fixed_positions.keys()
@@ -141,11 +217,53 @@ def network_analysis(nodes, edges, team):
                  bbox=dict(facecolor='red', alpha=0.5), horizontalalignment='center')
 
     plt.axis('off')
-    plt.title(team + " network")
+    plt.title(team + " " + strenghtState + " network")
 
     makedirs("exports", exist_ok=True)
 
-    plt.savefig('exports/' + team + '_network.png')
+    nodes_export = dict()
+    nodes_export['idPlayer'] = [item[0] for item in nodes if item[0] != 1]
+    nodes_export['playerName'] = [item[1]['playerName'] for item in nodes if item[1]['playerName'] != 'Goal']
+    nodes_export['playerFirstName'] = [item[1]['playerFirstName'] for item in nodes if item[1]['playerFirstName'] != '']
+    nodes_export['team'] = [team] * (len(nodes)-1)
+    nodes_export['seasonPoints'] = [int(item[1]['nodeLabel']) for item in nodes if item[1]['nodeLabel'] != '']
+
+    weights_export = list(weighted_nodes.values())
+    del weights_export[-1]
+
+    nodes_export['betweennessScore'] = weights_export
+    nodes_export = pd.DataFrame.from_dict(nodes_export)
+
+    edges_export = dict()
+    edges_export['idSource'] = [item[0] for item in edges]
+    sourceNames = list()
+    for item in edges:
+        sourceNames.append(nodes_export[nodes_export.idPlayer == item[0]].reset_index(drop=True).playerName[0])
+    edges_export['sourceName'] = sourceNames
+    edges_export['idTarget'] = [item[1] for item in edges]
+    targetNames = list()
+    for item in edges:
+        if item[1] == 1:
+            targetNames.append('GOAL')
+        else:
+            targetNames.append(nodes_export[nodes_export.idPlayer == item[1]].reset_index(drop=True).playerName[0])
+    edges_export['targetName'] = targetNames
+    edges_export['team'] = [team] * (len(edges))
+    edges_export['load'] = [item[2] for item in edges]
+    edges_export = pd.DataFrame.from_dict(edges_export)
+
+    if strenghtState == 'ES':
+        global ONGLET_NODES_ES
+        ONGLET_NODES_ES = ONGLET_NODES_ES.append(nodes_export)
+        global ONGLET_EDGES_ES
+        ONGLET_EDGES_ES = ONGLET_EDGES_ES.append(edges_export)
+    elif strenghtState == 'PP':
+        global ONGLET_NODES_PP
+        ONGLET_NODES_PP = ONGLET_NODES_PP.append(nodes_export)
+        global ONGLET_EDGES_PP
+        ONGLET_EDGES_PP = ONGLET_EDGES_PP.append(edges_export)
+
+    plt.savefig('exports/' + team + '_' + strenghtState + '_network.png')
 
     plt.clf()
 
@@ -175,14 +293,16 @@ def magnus_network_choice_screen(input_value):
         if batch_config is not None:
             print('Compute team network...')
             for team in batch_config.read().splitlines():
-                hockey_team_network_analysis(team, magnus_data_1819)
+                for game_situation in SITUATIONS:
+                    hockey_team_network_analysis(team, magnus_data_1819, game_situation)
             print('End of program.')
     if answer == 2:
         print(msg.message_info_magnusnetwork_uniqueteam)
         input_team = input('Choose your fighter: ')
         for team in MagnusTeams:
             if team.value == input_team:
-                hockey_team_network_analysis(team.value, magnus_data_1819)
+                for game_situation in SITUATIONS:
+                    hockey_team_network_analysis(team.value, magnus_data_1819, game_situation)
                 break
     if answer == 3:
         exit(msg.message_info_exit)
@@ -208,9 +328,9 @@ if __name__ == "__main__":
 
     # excel datas import
     try:
-        magnus_data_1819 = pd.read_excel(PATH_DATASET, sheet_name='Data')
+        magnus_data_1819 = pd.read_excel(PATH_ACTIONS_DATASET, sheet_name='Data')
     except ValueError:
-        print(msg.message_error_load_dataset + PATH_DATASET)
+        print(msg.message_error_load_dataset + PATH_ACTIONS_DATASET)
 
     print('Done.\n')
     print(msg.message_info_magnusnetwork_welcome)
@@ -221,5 +341,11 @@ if __name__ == "__main__":
                                            msg.message_functionnal_magnusnetwork_exit))
 
     magnus_network_choice_screen(answer)
+
+    with pd.ExcelWriter('exports/france1819networks.xlsx') as writer:
+        ONGLET_NODES_ES.to_excel(writer, sheet_name='NODES_ES')
+        ONGLET_EDGES_ES.to_excel(writer, sheet_name='EDGES_ES')
+        ONGLET_NODES_PP.to_excel(writer, sheet_name='NODES_PP')
+        ONGLET_EDGES_PP.to_excel(writer, sheet_name='EDGES_PP')
 
     input('Appuyer sur ENTREE pour fermer...')
